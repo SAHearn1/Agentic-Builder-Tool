@@ -4,7 +4,7 @@ Includes GitHub integration, Vercel deployment, and GCS logging.
 """
 import os
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 import httpx
 from langchain_core.tools import tool
 from langchain_community.agent_toolkits.github.toolkit import GitHubToolkit
@@ -133,7 +133,7 @@ def log_build_status(
         bucket = storage_client.bucket(bucket_name)
         
         # Create log entry
-        timestamp = datetime.utcnow().isoformat()
+        timestamp = datetime.now(timezone.utc).isoformat()
         log_content = f"""Build Log Entry
 ==================
 Build Name: {build_name}
