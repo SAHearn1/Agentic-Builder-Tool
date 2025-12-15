@@ -4,7 +4,7 @@ Exposes the LangGraph agent via LangServe endpoints.
 """
 import os
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from langserve import add_routes
 from agent import agent_graph
@@ -61,6 +61,52 @@ add_routes(
     path="/agent",
     enabled_endpoints=["invoke", "batch", "stream", "playground"],
 )
+
+
+@app.post("/webhook")
+async def github_webhook(request: Request):
+    """
+    GitHub webhook endpoint for automated DevOps workflows.
+    Triggered when code is pushed to a GitHub repository.
+    """
+    # Parse the data sent by GitHub
+    payload = await request.json()
+    
+    # Extract useful info
+    try:
+        repo_name = payload['repository']['full_name']
+        branch = payload['ref'].replace('refs/heads/', '')
+        commit_msg = payload['head_commit']['message']
+        commit_id = payload['head_commit']['id']
+        sender = payload['sender']['login']
+    except KeyError:
+        return {"status": "ignored", "reason": "Not a push event"}
+
+    # Construct a prompt for the Agent
+    mission = f"""
+    EVENT_TRIGGER: New code pushed by {sender}.
+    REPO: {repo_name}
+    BRANCH: {branch}
+    COMMIT_MESSAGE: "{commit_msg}"
+    
+    ACTION REQUIRED: 
+    1. Pull the latest code from this branch.
+    2. Analyze the changes for errors.
+    3. If healthy, trigger a deployment.
+    """
+
+    # Wake up the Agent (Invoke the Graph directly)
+    # We run this in the background so GitHub gets a fast "200 OK" response
+    config = {"configurable": {"thread_id": f"webhook-{commit_id}"}}
+    
+    # Note: In a real production app, use BackgroundTasks here. 
+    # For now, we await it to keep it simple.
+    result = await agent_graph.ainvoke(
+        {"messages": [("user", mission)]}, 
+        config=config
+    )
+
+    return {"status": "success", "agent_response": "Workflow started"}
 
 
 if __name__ == "__main__":
