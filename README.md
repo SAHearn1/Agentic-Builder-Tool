@@ -1,194 +1,229 @@
-# DevOps-Builder: Autonomous DevOps Agent
+# Agentic Tool Builder
 
-An intelligent, production-ready DevOps agent powered by **Claude 3.5 Sonnet** and **LangGraph**. This agent acts as an autonomous DevOps engineer capable of managing code deployments, infrastructure, and automation tasks using GitHub, Vercel, and Google Cloud Storage.
+> **Autonomous DevOps Agent using LangGraph, FastAPI, and Cloud Tools**
+
+An intelligent, production-ready Python application that acts as an autonomous DevOps engineer. It leverages Anthropic's Claude 3.5 Sonnet via LangGraph to write code, manage GitHub repositories, deploy to Vercel, and store artifacts in Google Cloud Storage.
 
 ## 🚀 Features
 
-- **AI-Powered DevOps**: Uses Claude 3.5 Sonnet via LangGraph for intelligent decision-making
-- **GitHub Integration**: Full repository management capabilities via LangChain's GitHub toolkit
-- **Vercel Deployments**: Trigger and manage Vercel deployments programmatically
-- **Cloud Logging**: Build status logging to Google Cloud Storage
-- **Production-Ready**: FastAPI server with LangServe, Docker support, and Cloud Run optimization
+- **Autonomous Agent**: LangGraph-powered agent with Claude 3.5 Sonnet for intelligent decision-making
+- **GitHub Integration**: Create repositories, commit code, manage pull requests
+- **Vercel Deployment**: Automated deployment and project management
+- **Cloud Storage**: Artifact management with Google Cloud Storage
+- **Production-Ready API**: FastAPI with LangServe for robust API endpoints
+- **Docker Support**: Containerized deployment with Docker and Docker Compose
+- **Type Safety**: Full Pydantic models with type hints
+- **Extensible**: Easy to add new tools and capabilities
 
 ## 📋 Prerequisites
 
 - Python 3.11 or higher
-- Docker (for containerized deployment)
+- Docker (optional, for containerized deployment)
 - API Keys:
-  - Anthropic API key (for Claude)
+  - Anthropic API key
   - GitHub Personal Access Token
-  - Vercel Token
-  - Google Cloud Service Account JSON (for GCS)
+  - Vercel API Token
+  - Google Cloud Platform Service Account
 
-## ⚙️ Setup
+## 🛠️ Installation
 
-### 1. Clone the Repository
+### Local Development
 
+1. **Clone the repository**:
 ```bash
 git clone https://github.com/SAHearn1/Agentic-Builder-Tool.git
 cd Agentic-Builder-Tool
 ```
 
-### 2. Configure Environment Variables
+2. **Create a virtual environment**:
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
 
-Copy the example environment file and fill in your credentials:
+3. **Install dependencies**:
+```bash
+pip install -e ".[dev]"
+```
 
+4. **Configure environment variables**:
 ```bash
 cp .env.example .env
+# Edit .env with your actual API keys and configuration
 ```
 
-Edit `.env` and add your API keys:
-
-```env
-ANTHROPIC_API_KEY=your_anthropic_api_key_here
-GITHUB_ACCESS_TOKEN=your_github_personal_access_token_here
-VERCEL_TOKEN=your_vercel_token_here
-GOOGLE_APPLICATION_CREDENTIALS=/path/to/your/service-account-key.json
-GCS_BUCKET_NAME=your_gcs_bucket_name_here
-PORT=8080
-```
-
-### 3. Local Development Setup
-
-#### Option A: Using Python Virtual Environment
-
+5. **Run the application**:
 ```bash
-# Create and activate virtual environment
-python3.11 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Run the server
-python server.py
+uvicorn src.main:app --reload
 ```
 
-#### Option B: Using Docker
+The API will be available at `http://localhost:8000`.
 
+### Docker Deployment
+
+1. **Build and run with Docker Compose**:
 ```bash
-# Build the Docker image
-docker build -t devops-builder .
-
-# Run the container
-docker run -p 8080:8080 --env-file .env devops-builder
+docker-compose up -d
 ```
 
-## 🐳 Docker Deployment
-
-### Build the Image
-
+2. **View logs**:
 ```bash
-docker build -t devops-builder:latest .
+docker-compose logs -f
 ```
 
-### Run Locally
-
+3. **Stop the application**:
 ```bash
-docker run -p 8080:8080 \
-  -e ANTHROPIC_API_KEY=your_key \
-  -e GITHUB_ACCESS_TOKEN=your_token \
-  -e VERCEL_TOKEN=your_token \
-  -e GOOGLE_APPLICATION_CREDENTIALS=/app/service-account.json \
-  -e GCS_BUCKET_NAME=your_bucket \
-  -v /path/to/service-account.json:/app/service-account.json \
-  devops-builder:latest
+docker-compose down
 ```
 
-### Deploy to Google Cloud Run
+## 🔧 Configuration
 
+All configuration is done through environment variables. See `.env.example` for all available options:
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `ANTHROPIC_API_KEY` | Anthropic API key for Claude | Yes |
+| `GITHUB_TOKEN` | GitHub personal access token | Yes |
+| `VERCEL_TOKEN` | Vercel API token | Yes |
+| `GCS_PROJECT_ID` | Google Cloud project ID | Yes |
+| `GCS_BUCKET_NAME` | GCS bucket name | Yes |
+| `GOOGLE_APPLICATION_CREDENTIALS` | Path to GCP service account key | Yes |
+| `AGENT_MODEL` | Claude model to use | No (default: claude-3-5-sonnet-20241022) |
+| `AGENT_MAX_ITERATIONS` | Maximum agent iterations | No (default: 10) |
+
+## 📚 API Documentation
+
+Once the application is running, visit:
+- **Interactive API Docs**: http://localhost:8000/docs
+- **Alternative Docs**: http://localhost:8000/redoc
+
+### Key Endpoints
+
+#### Health Check
 ```bash
-# Tag the image for Google Container Registry
-docker tag devops-builder:latest gcr.io/YOUR_PROJECT_ID/devops-builder:latest
-
-# Push to GCR
-docker push gcr.io/YOUR_PROJECT_ID/devops-builder:latest
-
-# Deploy to Cloud Run
-gcloud run deploy devops-builder \
-  --image gcr.io/YOUR_PROJECT_ID/devops-builder:latest \
-  --platform managed \
-  --region us-central1 \
-  --allow-unauthenticated \
-  --set-env-vars ANTHROPIC_API_KEY=your_key,GITHUB_ACCESS_TOKEN=your_token,VERCEL_TOKEN=your_token,GCS_BUCKET_NAME=your_bucket
+GET /health
 ```
 
-## 📡 API Endpoints
-
-Once running, the server exposes the following endpoints:
-
-- **`GET /`** - Health check and service info
-- **`GET /health`** - Health status
-- **`POST /agent/invoke`** - Invoke the agent with a single request
-- **`POST /agent/batch`** - Batch process multiple requests
-- **`POST /agent/stream`** - Stream agent responses
-- **`GET /agent/playground`** - Interactive web UI for testing
-- **`GET /docs`** - OpenAPI/Swagger documentation
-
-### Example Usage
-
+#### Execute Agent Task
 ```bash
-# Test the health endpoint
-curl http://localhost:8080/health
+POST /agent/task
+Content-Type: application/json
 
-# Invoke the agent
-curl -X POST http://localhost:8080/agent/invoke \
-  -H "Content-Type: application/json" \
-  -d '{
-    "input": {
-      "messages": [
-        {
-          "role": "user",
-          "content": "Deploy my-app to Vercel production"
-        }
-      ]
-    },
-    "config": {
-      "configurable": {
-        "thread_id": "example-thread"
-      }
-    }
-  }'
+{
+  "task": "Create a new React app and deploy it to Vercel",
+  "context": "Use TypeScript and Tailwind CSS",
+  "max_iterations": 10
+}
 ```
 
-## 🛠️ Available Tools
-
-The agent has access to the following tools:
-
-1. **GitHub Toolkit**: Repository management, issues, PRs, commits, etc.
-2. **Vercel Deployment**: Trigger deployments to Vercel
-3. **GCS Build Logging**: Log build statuses to Google Cloud Storage
+#### LangServe Endpoints
+```bash
+POST /agent/invoke    # Synchronous agent invocation
+POST /agent/stream    # Streaming agent responses
+```
 
 ## 🧪 Testing
 
-```bash
-# Run with verbose logging
-python server.py
+Run the test suite:
 
-# Access the playground UI
-open http://localhost:8080/agent/playground
+```bash
+# Run all tests
+pytest
+
+# Run with coverage
+pytest --cov=src --cov-report=html
+
+# Run specific test file
+pytest tests/unit/test_config.py
 ```
 
-## 📚 Tech Stack
+## 🏗️ Architecture
 
-- **Language**: Python 3.11+
-- **Agent Framework**: LangGraph (ReAct agent pattern)
-- **LLM**: Claude 3.5 Sonnet (Anthropic)
-- **API Framework**: FastAPI + LangServe
-- **Deployment**: Docker + Google Cloud Run
-- **Integrations**: GitHub, Vercel, Google Cloud Storage
+```
+src/
+├── agent/          # LangGraph agent implementation
+│   ├── graph.py    # Agent graph definition
+│   └── state.py    # Agent state management
+├── api/            # FastAPI routes
+│   └── routes.py   # API endpoints
+├── config/         # Configuration management
+│   └── settings.py # Pydantic settings
+├── models/         # Data models
+│   ├── requests.py # Request models
+│   └── responses.py# Response models
+├── tools/          # DevOps tools
+│   ├── github_tools.py  # GitHub integration
+│   ├── vercel_tools.py  # Vercel deployment
+│   └── gcs_tools.py     # Google Cloud Storage
+└── main.py         # FastAPI application
+```
 
-## 🔐 Security Notes
+## 🔨 Development
 
-- Never commit `.env` files or credentials to version control
-- Use service accounts with minimal required permissions for GCS
-- Rotate API tokens regularly
-- Consider using secret management services (e.g., Google Secret Manager) for production
+### Code Quality
 
-## 📝 License
+Format code with Black:
+```bash
+black src/ tests/
+```
 
-MIT License - See LICENSE file for details
+Lint code with Ruff:
+```bash
+ruff check src/ tests/
+```
+
+Type checking with mypy:
+```bash
+mypy src/
+```
+
+### Adding New Tools
+
+1. Create a new file in `src/tools/`
+2. Define tools using the `@tool` decorator
+3. Export the tools list
+4. Update `src/tools/__init__.py` to include new tools
+
+Example:
+```python
+from langchain_core.tools import tool
+
+@tool
+def my_new_tool(param: str) -> str:
+    """Tool description."""
+    # Implementation
+    return "result"
+
+my_tools = [my_new_tool]
+```
+
+## 🐳 Docker
+
+### Build Image
+```bash
+docker build -t agentic-tool-builder .
+```
+
+### Run Container
+```bash
+docker run -p 8000:8000 --env-file .env agentic-tool-builder
+```
+
+## 📄 License
+
+MIT License - see LICENSE file for details
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please open an issue or submit a pull request.
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📞 Support
+
+For issues and questions, please open an issue on GitHub.
+
+## 🙏 Acknowledgments
+
+- Built with [LangGraph](https://github.com/langchain-ai/langgraph)
+- Powered by [Anthropic Claude](https://www.anthropic.com/claude)
+- API framework by [FastAPI](https://fastapi.tiangolo.com/)
+- Served with [LangServe](https://github.com/langchain-ai/langserve)
