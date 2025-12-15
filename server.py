@@ -77,6 +77,7 @@ async def github_webhook(request: Request):
         repo_name = payload['repository']['full_name']
         branch = payload['ref'].replace('refs/heads/', '')
         commit_msg = payload['head_commit']['message']
+        commit_id = payload['head_commit']['id']
         sender = payload['sender']['login']
     except KeyError:
         return {"status": "ignored", "reason": "Not a push event"}
@@ -96,7 +97,7 @@ async def github_webhook(request: Request):
 
     # Wake up the Agent (Invoke the Graph directly)
     # We run this in the background so GitHub gets a fast "200 OK" response
-    config = {"configurable": {"thread_id": f"webhook-{payload['head_commit']['id']}"}}
+    config = {"configurable": {"thread_id": f"webhook-{commit_id}"}}
     
     # Note: In a real production app, use BackgroundTasks here. 
     # For now, we await it to keep it simple.
