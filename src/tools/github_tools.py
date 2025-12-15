@@ -7,6 +7,9 @@ from langchain_core.tools import tool
 
 from src.config import get_settings
 
+# Default limit for repository listings
+DEFAULT_REPO_LIMIT = 10
+
 
 @tool
 def create_github_repo(repo_name: str, description: str = "", private: bool = False) -> str:

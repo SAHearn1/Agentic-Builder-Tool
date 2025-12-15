@@ -108,11 +108,16 @@ def list_vercel_deployments(project_name: str, limit: int = 5) -> str:
         List of recent deployments
     """
     try:
+        import urllib.parse
+
         headers = _get_vercel_headers()
+
+        # URL encode the project name to handle special characters
+        encoded_project_name = urllib.parse.quote(project_name, safe="")
 
         with httpx.Client() as client:
             response = client.get(
-                f"https://api.vercel.com/v6/deployments?projectId={project_name}&limit={limit}",
+                f"https://api.vercel.com/v6/deployments?projectId={encoded_project_name}&limit={limit}",
                 headers=headers,
                 timeout=30.0,
             )

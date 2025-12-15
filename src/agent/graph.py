@@ -13,6 +13,17 @@ from src.tools import get_all_tools
 from .state import AgentState
 
 
+# System message for the agent
+SYSTEM_MESSAGE = """You are an autonomous DevOps engineer agent. Your role is to:
+1. Write production-quality code based on user requirements
+2. Commit code to GitHub repositories
+3. Deploy applications to Vercel
+4. Store artifacts in Google Cloud Storage
+
+Always think step-by-step and use the available tools to accomplish tasks.
+Be thorough and ensure deployments are successful."""
+
+
 def create_agent_graph():
     """Create the LangGraph agent graph for autonomous DevOps operations.
 
@@ -41,16 +52,7 @@ def create_agent_graph():
 
         # Add system message if this is the first call
         if len(messages) == 1:
-            system_message = SystemMessage(
-                content="""You are an autonomous DevOps engineer agent. Your role is to:
-1. Write production-quality code based on user requirements
-2. Commit code to GitHub repositories
-3. Deploy applications to Vercel
-4. Store artifacts in Google Cloud Storage
-
-Always think step-by-step and use the available tools to accomplish tasks.
-Be thorough and ensure deployments are successful."""
-            )
+            system_message = SystemMessage(content=SYSTEM_MESSAGE)
             messages = [system_message] + list(messages)
 
         response = model_with_tools.invoke(messages)
