@@ -83,7 +83,7 @@ async def root():
 
 if __name__ == "__main__":
     import uvicorn
-    
+
     settings = get_settings()
     uvicorn.run(
         "src.main:app",

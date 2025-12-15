@@ -8,7 +8,7 @@ from langgraph.graph.message import add_messages
 
 class AgentState(TypedDict):
     """State for the autonomous DevOps agent.
-    
+
     Attributes:
         messages: Conversation history with the agent
         task: Current task description
@@ -17,7 +17,7 @@ class AgentState(TypedDict):
         artifacts: URLs or references to created artifacts
         iteration_count: Number of iterations performed
     """
-    
+
     messages: Annotated[Sequence[BaseMessage], add_messages]
     task: str
     code_generated: str

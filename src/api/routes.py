@@ -18,7 +18,7 @@ router = APIRouter()
 @router.get("/health", response_model=HealthResponse)
 async def health_check() -> HealthResponse:
     """Health check endpoint.
-    
+
     Returns:
         Service health status
     """
@@ -28,24 +28,24 @@ async def health_check() -> HealthResponse:
 @router.post("/agent/task", response_model=AgentResponse)
 async def execute_task(request: TaskRequest) -> AgentResponse:
     """Execute a DevOps task using the autonomous agent.
-    
+
     Args:
         request: Task request with description and parameters
-        
+
     Returns:
         Agent execution result
     """
     try:
         logger.info(f"Executing task: {request.task}")
-        
+
         # Create agent graph
         agent = create_agent_graph()
-        
+
         # Prepare initial state
         task_description = request.task
         if request.context:
             task_description += f"\n\nContext: {request.context}"
-        
+
         initial_state = {
             "messages": [HumanMessage(content=task_description)],
             "task": request.task,
@@ -54,13 +54,13 @@ async def execute_task(request: TaskRequest) -> AgentResponse:
             "artifacts": [],
             "iteration_count": 0,
         }
-        
+
         # Execute agent
         result = agent.invoke(initial_state)
-        
+
         # Extract response
         final_message = result["messages"][-1].content if result["messages"] else "No response"
-        
+
         return AgentResponse(
             success=True,
             message=final_message,
@@ -78,7 +78,7 @@ async def execute_task(request: TaskRequest) -> AgentResponse:
 @router.get("/agent/status")
 async def get_status() -> Dict[str, str]:
     """Get agent status and configuration.
-    
+
     Returns:
         Agent status information
     """

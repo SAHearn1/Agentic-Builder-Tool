@@ -7,7 +7,7 @@ from .gcs_tools import gcs_tools
 
 def get_all_tools():
     """Get all available tools for the agent.
-    
+
     Returns:
         List of all tool instances
     """

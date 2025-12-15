@@ -19,9 +19,9 @@ def test_settings_with_env_vars(monkeypatch):
     monkeypatch.setenv("VERCEL_TOKEN", "test_vercel")
     monkeypatch.setenv("GCS_PROJECT_ID", "test_project")
     monkeypatch.setenv("GCS_BUCKET_NAME", "test_bucket")
-    
+
     settings = Settings()
-    
+
     assert settings.anthropic_api_key == "test_key"
     assert settings.github_token == "test_token"
     assert settings.vercel_token == "test_vercel"
