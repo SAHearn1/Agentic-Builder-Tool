@@ -2,14 +2,29 @@
 Tools for the DevOps-Builder agent.
 Includes GitHub integration, Vercel deployment, and GCS logging.
 """
+
 import os
 from typing import Optional
 from datetime import datetime, timezone
+
 import httpx
 from langchain_core.tools import tool
-from langchain_community.agent_toolkits.github.toolkit import GitHubToolkit
-from langchain_community.utilities.github import GitHubAPIWrapper
-from google.cloud import storage
+
+# Optional LangChain GitHub imports
+try:
+    from langchain_community.agent_toolkits.github.toolkit import GitHubToolkit  # type: ignore
+    from langchain_community.utilities.github import GitHubAPIWrapper  # type: ignore
+    _LANGCHAIN_AVAILABLE = True
+except Exception:
+    GitHubToolkit = None  # type: ignore
+    GitHubAPIWrapper = None  # type: ignore
+    _LANGCHAIN_AVAILABLE = False
+
+# Optional Google Cloud Storage import
+try:
+    from google.cloud import storage  # type: ignore
+except Exception:
+    storage = None  # type: ignore
 
 
 def get_tools():
@@ -18,23 +33,27 @@ def get_tools():
     Includes GitHub toolkit and custom Vercel/GCS tools.
     """
     tools = []
-    
+
     # GitHub Toolkit
     github_token = os.getenv("GITHUB_TOKEN")
-    if github_token:
+    if github_token and _LANGCHAIN_AVAILABLE:
         try:
-            github = GitHubAPIWrapper(github_access_token=github_token)
-            github_toolkit = GitHubToolkit.from_github_api_wrapper(github)
-            tools.extend(github_toolkit.get_tools())
+            # type: ignore for dynamic import
+            github = GitHubAPIWrapper(github_access_token=github_token)  # type: ignore
+            github_toolkit = GitHubToolkit.from_github_api_wrapper(github)  # type: ignore
+            tools.extend(github_toolkit.get_tools())  # type: ignore
         except Exception as e:
             print(f"Warning: Could not initialize GitHub toolkit: {e}")
     else:
-        print("Warning: GITHUB_TOKEN not set, GitHub tools will not be available")
-    
+        if not github_token:
+            print("Warning: GITHUB_TOKEN not set, GitHub tools will not be available")
+        elif not _LANGCHAIN_AVAILABLE:
+            print("Warning: langchain_community not installed; GitHub tools will not be available")
+
     # Add custom tools
     tools.append(trigger_vercel_deployment)
     tools.append(log_build_status)
-    
+
     return tools
 
 
@@ -42,63 +61,61 @@ def get_tools():
 def trigger_vercel_deployment(
     project_name: str,
     git_source: Optional[str] = None,
-    environment: str = "production"
+    environment: str = "production",
 ) -> str:
     """
     Triggers a deployment on Vercel for the specified project.
-    
+
     Args:
         project_name: The name of the Vercel project to deploy
         git_source: Optional git branch or commit to deploy
         environment: The deployment environment (production, preview, or development)
-    
+
     Returns:
         A message indicating the deployment status with deployment URL
     """
     vercel_token = os.getenv("VERCEL_TOKEN")
-    
+
     if not vercel_token:
         return "Error: VERCEL_TOKEN environment variable is not set"
-    
+
     # Vercel API endpoint for deployments
     url = "https://api.vercel.com/v13/deployments"
-    
+
     # Prepare headers with authorization
     headers = {
         "Authorization": f"Bearer {vercel_token}",
         "Content-Type": "application/json"
     }
-    
+
     # Prepare deployment payload
     payload = {
         "name": project_name,
         "target": environment
     }
-    
+
     if git_source:
         payload["gitSource"] = {
             "type": "github",
             "ref": git_source
         }
-    
+
     try:
         # Make the API request
         with httpx.Client(timeout=30.0) as client:
             response = client.post(url, headers=headers, json=payload)
             response.raise_for_status()
-            
+
             result = response.json()
             deployment_url = result.get("url", "N/A")
             deployment_id = result.get("id", "N/A")
-            
+
             return (
-                f"✅ Vercel deployment triggered successfully!\n"
-                f"Project: {project_name}\n"
-                f"Environment: {environment}\n"
+                f"Deployment triggered successfully!\n"
                 f"Deployment ID: {deployment_id}\n"
                 f"URL: https://{deployment_url}"
             )
-    
+
     except httpx.HTTPStatusError as e:
         return f"Error: Vercel API request failed with status {e.response.status_code}: {e.response.text}"
     except Exception as e:
@@ -113,48 +130,52 @@ def log_build_status(
 ) -> str:
     """
     Logs build status information to Google Cloud Storage.
-    
+
     Args:
         build_name: The name/identifier of the build
         status: The build status (e.g., 'success', 'failure', 'in_progress')
         details: Optional additional details about the build
-    
+
     Returns:
         A message indicating whether the log was successfully written
     """
+    # Ensure the Google Cloud Storage library is available
+    if storage is None:
+        return "Error: google cloud storage library is not available"
+
     bucket_name = os.getenv("GCS_BUCKET_NAME")
-    
+
     if not bucket_name:
         return "Error: GCS_BUCKET_NAME environment variable is not set"
-    
+
     try:
         # Initialize GCS client
         storage_client = storage.Client()
         bucket = storage_client.bucket(bucket_name)
-        
+
         # Create log entry
         timestamp = datetime.now(timezone.utc).isoformat()
         log_content = f"""Build Log Entry
-==================
+=====================
 Build Name: {build_name}
 Status: {status}
 Timestamp: {timestamp}
 Details: {details or 'N/A'}
 """
-        
+
         # Create blob name with timestamp
-        blob_name = f"build-logs/{build_name}/{timestamp.replace(':', '-')}.txt"
+        blob_name = f"build-logs/{build_name}/{timestamp.replace(':', '-').replace('.', '-')}.txt"
         blob = bucket.blob(blob_name)
-        
+
         # Upload log to GCS
         blob.upload_from_string(log_content, content_type="text/plain")
-        
+
         return (
-            f"✅ Build status logged successfully to GCS!\n"
+            f"\u2713 Build status logged successfully to GCS!\n"
             f"Bucket: {bucket_name}\n"
             f"Path: {blob_name}\n"
             f"Status: {status}"
         )
-    
+
     except Exception as e:
         return f"Error logging build status to GCS: {str(e)}"
