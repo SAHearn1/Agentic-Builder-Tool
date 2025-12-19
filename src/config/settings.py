@@ -32,7 +32,7 @@ class Settings(BaseSettings):
     gcs_project_id: str = Field(..., description="GCP project ID")
     gcs_bucket_name: str = Field(..., description="GCS bucket name")
     google_application_credentials: Optional[str] = Field(
-        None, description="Path to GCP service account key"
+        None, description="Path to GCP service account key (not needed if using GOOGLE_APPLICATION_CREDENTIALS_JSON)"
     )
 
     # Application Configuration

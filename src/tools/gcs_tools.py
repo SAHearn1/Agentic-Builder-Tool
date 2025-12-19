@@ -11,12 +11,30 @@ from src.config import get_settings
 
 
 def _get_storage_client():
-    """Get Google Cloud Storage client."""
+    """Get Google Cloud Storage client with Vercel compatibility."""
+    import json
+    from google.oauth2 import service_account
+
     settings = get_settings()
 
-    # Set credentials if provided
+    # Check if credentials are provided as JSON string (Vercel deployment)
+    creds_json_str = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
+
+    if creds_json_str:
+        # Parse JSON credentials from environment variable
+        try:
+            creds_dict = json.loads(creds_json_str)
+            credentials = service_account.Credentials.from_service_account_info(creds_dict)
+            return storage.Client(project=settings.gcs_project_id, credentials=credentials)
+        except (json.JSONDecodeError, ValueError) as e:
+            # Fall through to file-based credentials
+            pass
+
+    # Fall back to file-based credentials (local development)
     if settings.google_application_credentials:
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = settings.google_application_credentials
+        if os.path.exists(settings.google_application_credentials):
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = settings.google_application_credentials
+        # else: let the SDK handle missing file error
 
     return storage.Client(project=settings.gcs_project_id)
 
