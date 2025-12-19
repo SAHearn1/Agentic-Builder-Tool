@@ -18,19 +18,19 @@ class Settings(BaseSettings):
     )
 
     # Anthropic Configuration
-    anthropic_api_key: str = Field(..., description="Anthropic API key")
+    anthropic_api_key: str = Field(default="", description="Anthropic API key")
 
     # GitHub Configuration
-    github_token: str = Field(..., description="GitHub personal access token")
+    github_token: str = Field(default="", description="GitHub personal access token")
     github_default_org: Optional[str] = Field(None, description="Default GitHub organization")
 
     # Vercel Configuration
-    vercel_token: str = Field(..., description="Vercel API token")
+    vercel_token: str = Field(default="", description="Vercel API token")
     vercel_team_id: Optional[str] = Field(None, description="Vercel team ID (optional)")
 
     # Google Cloud Storage Configuration
-    gcs_project_id: str = Field(..., description="GCP project ID")
-    gcs_bucket_name: str = Field(..., description="GCS bucket name")
+    gcs_project_id: str = Field(default="", description="GCP project ID")
+    gcs_bucket_name: str = Field(default="", description="GCS bucket name")
     google_application_credentials: Optional[str] = Field(
         None, description="Path to GCP service account key (not needed if using GOOGLE_APPLICATION_CREDENTIALS_JSON)"
     )
