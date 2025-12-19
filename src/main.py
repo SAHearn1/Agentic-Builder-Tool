@@ -56,15 +56,20 @@ app.add_middleware(
 app.include_router(router, tags=["agent"])
 
 # Add LangServe routes for the agent
+# Skip agent initialization if critical env vars are missing (deployment validation)
 try:
-    agent_graph = create_agent_graph()
-    add_routes(
-        app,
-        agent_graph,
-        path="/agent",
-        enabled_endpoints=["invoke", "stream"],
-    )
-    logger.info("LangServe routes added successfully")
+    settings = get_settings()
+    if settings.anthropic_api_key and settings.anthropic_api_key != "":
+        agent_graph = create_agent_graph()
+        add_routes(
+            app,
+            agent_graph,
+            path="/agent",
+            enabled_endpoints=["invoke", "stream"],
+        )
+        logger.info("LangServe routes added successfully")
+    else:
+        logger.warning("Anthropic API key not configured - agent routes disabled")
 except Exception as e:
     logger.warning(f"Could not add LangServe routes: {e}")
 
