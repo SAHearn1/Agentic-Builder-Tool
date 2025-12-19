@@ -40,10 +40,14 @@ app = FastAPI(
 )
 
 # Add CORS middleware
+# For production, set ALLOWED_ORIGINS env var to specific domains
+# Never use allow_credentials=True with allow_origins=["*"] in production
+import os
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "*").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=allowed_origins,
+    allow_credentials=False,  # Changed to False for security when using wildcard origins
     allow_methods=["*"],
     allow_headers=["*"],
 )

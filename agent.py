@@ -24,8 +24,10 @@ def create_agent_graph():
         raise ValueError("ANTHROPIC_API_KEY environment variable is not set")
     
     # Initialize Claude 3.5 Sonnet model
+    # Use environment variable for model version, default to latest
+    model_name = os.getenv("AGENT_MODEL", "claude-3-5-sonnet-20241022")
     llm = ChatAnthropic(
-        model="claude-3-5-sonnet-20240620",
+        model=model_name,
         anthropic_api_key=anthropic_api_key,
         temperature=0.7,
         max_tokens=4096,
