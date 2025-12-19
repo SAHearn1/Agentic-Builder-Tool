@@ -1,0 +1,28 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "src/main.py",
+      "use": "@vercel/python",
+      "config": {
+        "maxLambdaSize": "50mb"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "src/main.py"
+    }
+  ],
+  "env": {
+    "PYTHONPATH": "/var/task"
+  },
+  "regions": ["iad1"],
+  "functions": {
+    "src/main.py": {
+      "memory": 1024,
+      "maxDuration": 60
+    }
+  }
+}
