@@ -20,7 +20,7 @@ def get_tools():
     tools = []
     
     # GitHub Toolkit
-    github_token = os.getenv("GITHUB_ACCESS_TOKEN")
+    github_token = os.getenv("GITHUB_TOKEN")
     if github_token:
         try:
             github = GitHubAPIWrapper(github_access_token=github_token)
@@ -29,7 +29,7 @@ def get_tools():
         except Exception as e:
             print(f"Warning: Could not initialize GitHub toolkit: {e}")
     else:
-        print("Warning: GITHUB_ACCESS_TOKEN not set, GitHub tools will not be available")
+        print("Warning: GITHUB_TOKEN not set, GitHub tools will not be available")
     
     # Add custom tools
     tools.append(trigger_vercel_deployment)
