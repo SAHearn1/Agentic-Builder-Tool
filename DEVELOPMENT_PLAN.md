@@ -18,32 +18,58 @@
 
 ## 🎯 Current Status
 
-### Open Pull Requests
-| PR | Title | Status | Priority |
-|----|-------|--------|----------|
-| [#9](https://github.com/SAHearn1/Agentic-Builder-Tool/pull/9) | Lazy-load optional dependencies and improve error handling | Open | 🔴 High |
-| [#8](https://github.com/SAHearn1/Agentic-Builder-Tool/pull/8) | Claude/agentic builder deployment | Open | 🔴 High |
+### Recently Completed
+| Item | Date | Notes |
+|------|------|-------|
+| ✅ Merged PR #9 | Jan 30, 2026 | Lazy-load optional dependencies |
+| ✅ Merged PR #8 | Jan 30, 2026 | Setup guide & deployment improvements |
+| ✅ Added DEVELOPMENT_PLAN.md | Jan 30, 2026 | This document |
 
-### Known Issues
-- Optional dependencies crash on import in Vercel environment
-- GCS integration requires service account setup documentation
-- No automated tests in CI/CD pipeline
+### Blocking Issues
+| Issue | Priority | Action Needed |
+|-------|----------|---------------|
+| Vercel deployment returning 500 | 🔴 Critical | Set env vars & redeploy |
 
 ---
 
 ## 🗺️ Development Roadmap
 
-### Phase 1: Stabilization (Current)
+### Phase 1: Stabilization ⏳ IN PROGRESS
 **Target:** February 2026  
 **Goal:** Production-ready deployment
 
-| Task | Status | Owner |
+| Task | Status | Notes |
 |------|--------|-------|
-| Merge PR #9 (lazy-load dependencies) | ⏳ Pending | - |
-| Merge PR #8 (deployment fixes) | ⏳ Pending | - |
-| Add error handling for missing API keys | ⬜ Todo | - |
-| Fix Vercel deployment issues | ⬜ Todo | - |
-| Add health check endpoint validation | ⬜ Todo | - |
+| Merge PR #9 (lazy-load dependencies) | ✅ Done | Jan 30, 2026 |
+| Merge PR #8 (deployment fixes) | ✅ Done | Jan 30, 2026 |
+| Set Vercel environment variables | ⬜ **ACTION REQUIRED** | See instructions below |
+| Trigger Vercel redeploy | ⬜ **ACTION REQUIRED** | After env vars set |
+| Verify /health endpoint | ⬜ Blocked | Waiting on deploy |
+| Verify /agent/task endpoint | ⬜ Blocked | Waiting on deploy |
+| Test end-to-end agent flow | ⬜ Blocked | Waiting on deploy |
+
+#### 🔧 REQUIRED: Vercel Environment Variables
+
+Go to: **Vercel Dashboard → agentic-builder-tool → Settings → Environment Variables**
+
+Add these variables:
+
+```
+ANTHROPIC_API_KEY=sk-ant-api03-your-key
+GITHUB_TOKEN=ghp_your-token
+VERCEL_TOKEN=your-vercel-token
+GCS_PROJECT_ID=your-gcp-project
+GCS_BUCKET_NAME=your-bucket-name
+GOOGLE_APPLICATION_CREDENTIALS_JSON={"type":"service_account",...}
+APP_ENV=production
+ALLOWED_ORIGINS=https://agentic-builder-tool.vercel.app
+```
+
+**Note:** For `GOOGLE_APPLICATION_CREDENTIALS_JSON`, paste the entire service account JSON as a single line.
+
+After adding, click **Redeploy** on the latest deployment.
+
+---
 
 ### Phase 2: Testing & Quality
 **Target:** February 2026  
@@ -128,10 +154,10 @@
 | Metric | Current | Target |
 |--------|---------|--------|
 | Test Coverage | 0% | 80% |
-| Open Issues | 2 | 0 |
-| Deployment Success Rate | Unknown | 99% |
+| Open PRs | 0 | 0 |
+| Deployment Status | ❌ Failing | ✅ Healthy |
 | Avg Task Completion Time | Unknown | < 60s |
-| Documentation Coverage | 60% | 100% |
+| Documentation Coverage | 80% | 100% |
 
 ---
 
