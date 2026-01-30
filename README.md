@@ -52,7 +52,18 @@ cp .env.example .env
 # Edit .env with your actual API keys and configuration
 ```
 
-5. **Run the application**:
+5. **Verify your configuration**:
+```bash
+# Quick check (fast)
+./quick_check.sh
+
+# Comprehensive verification with API tests (recommended)
+python verify_env.py
+```
+
+See [SETUP_GUIDE.md](SETUP_GUIDE.md) for detailed setup instructions.
+
+6. **Run the application**:
 ```bash
 uvicorn src.main:app --reload
 ```
@@ -90,6 +101,29 @@ All configuration is done through environment variables. See `.env.example` for 
 | `GOOGLE_APPLICATION_CREDENTIALS` | Path to GCP service account key | Yes |
 | `AGENT_MODEL` | Claude model to use | No (default: claude-3-5-sonnet-20241022) |
 | `AGENT_MAX_ITERATIONS` | Maximum agent iterations | No (default: 10) |
+
+### Environment Verification
+
+Before running the application, verify your configuration:
+
+**Quick Check** (basic validation):
+```bash
+./quick_check.sh
+```
+
+**Comprehensive Verification** (includes API connectivity tests):
+```bash
+python verify_env.py
+```
+
+The verification script will:
+- ✓ Check all required environment variables
+- ✓ Test connectivity to Anthropic, GitHub, Vercel, and GCS APIs
+- ✓ Validate GCP service account credentials
+- ✓ Verify bucket access and permissions
+- ✓ Provide detailed error messages for any issues
+
+See [SETUP_GUIDE.md](SETUP_GUIDE.md) for detailed credential setup instructions.
 
 ## 📚 API Documentation
 
